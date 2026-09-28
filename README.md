@@ -1,2 +1,6 @@
-# simulador_cpu_8bits
-Simulador de CPU von Neumann de 8 bits en Excel VBA - Arquitectura de Computadoras
+# Simulador de CPU de 8 bits (von Neumann)
+## Arquitectura (diagrama Mermaid)
+## Mapa de memoria
+## Tabla ISA
+## Manual de usuario
+## Programa demostrativo y traza
