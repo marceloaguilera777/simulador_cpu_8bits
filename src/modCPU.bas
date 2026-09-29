@@ -17,26 +17,37 @@ Dim guardar As Boolean     ' True si STORE tiene que guardar algo
 
 ' ---------- Ejecuta la siguiente fase del ciclo ----------
 Sub Paso()
-    Select Case Sheets("CPU").Range("U24").Value
+    Dim fase As String
+    fase = Sheets("CPU").Range("U24").Value
+
+    If fase = "DETENIDO" Then
+        MsgBox "El CPU esta detenido (HLT). Presione RESET para empezar de nuevo."
+        Exit Sub
+    End If
+
+    QuitarResaltado     ' se borra el naranja de la fase anterior
+    Select Case fase
         Case "", "STORE"
             Fetch
-            PonerFase "FETCH"
+            fase = "FETCH"
         Case "FETCH"
             Decode
-            PonerFase "DECODE"
-            If operacion = "???" Then
-                MsgBox "Opcode desconocido: " & AHex(LeerRegistro("IR")) & "h. El CPU se detiene."
-                PonerFase "DETENIDO"
-            End If
+            fase = "DECODE"
         Case "DECODE"
             Execute
-            If operacion = "HLT" Then PonerFase "DETENIDO" Else PonerFase "EXECUTE"
+            fase = "EXECUTE"
         Case "EXECUTE"
             Store
-            PonerFase "STORE"
-        Case "DETENIDO"
-            MsgBox "El CPU esta detenido (HLT). Use Reiniciar para empezar de nuevo."
+            fase = "STORE"
     End Select
+    PonerFase fase
+    EscribirLog fase, DetalleFase(fase)
+
+    If fase = "DECODE" And operacion = "???" Then
+        MsgBox "Opcode desconocido: " & AHex(LeerRegistro("IR")) & "h. El CPU se detiene."
+        PonerFase "DETENIDO"
+    End If
+    If fase = "EXECUTE" And operacion = "HLT" Then PonerFase "DETENIDO"
 End Sub
 
 ' ---------- Ejecuta todo el programa hasta HLT ----------
@@ -54,10 +65,23 @@ Sub Reiniciar()
     ResetCPU
     PonerFase ""
     Sheets("CPU").Range("U25").Value = ""
+    BorrarLog
+    QuitarResaltado
 End Sub
 
+' Muestra la fase y le pone un color distinto a cada una
 Sub PonerFase(ByVal fase As String)
-    Sheets("CPU").Range("U24").Value = fase
+    With Sheets("CPU").Range("U24")
+        .Value = fase
+        Select Case fase
+            Case "FETCH":    .Interior.Color = RGB(155, 194, 230)   ' azul
+            Case "DECODE":   .Interior.Color = RGB(204, 192, 218)   ' lila
+            Case "EXECUTE":  .Interior.Color = RGB(255, 192, 0)     ' naranja
+            Case "STORE":    .Interior.Color = RGB(169, 208, 142)   ' verde
+            Case "DETENIDO": .Interior.Color = RGB(255, 124, 128)   ' rojo
+            Case Else:       .Interior.ColorIndex = xlNone
+        End Select
+    End With
 End Sub
 
 ' ============================================================
@@ -204,6 +228,60 @@ Function TextoInstruccion() As String
                 TextoInstruccion = operacion & " " & registro & ", " & AHex(operando)
             Else
                 TextoInstruccion = operacion & " " & registro & ", " & otro
+            End If
+    End Select
+End Function
+
+' Texto para el log de lo que paso en cada fase
+Function DetalleFase(ByVal fase As String) As String
+    Dim mar As String, mdr As String
+    mar = AHex(LeerRegistro("MAR"))
+    mdr = AHex(LeerRegistro("MDR"))
+
+    Select Case fase
+        Case "FETCH"
+            DetalleFase = "MAR=" & mar & ", MDR=" & mdr & " -> IR=" & AHex(LeerRegistro("IR")) & _
+                          ", PC=" & AHex(LeerRegistro("PC"))
+
+        Case "DECODE"
+            DetalleFase = "IR=" & AHex(LeerRegistro("IR")) & " -> " & TextoInstruccion()
+            If dosBytes Then DetalleFase = DetalleFase & "  (operando: MAR=" & mar & ", MDR=" & mdr & ")"
+
+        Case "EXECUTE"
+            Select Case operacion
+                Case "ADD", "SUB", "CMP", "AND", "OR", "XOR", "INC", "DEC", "NOT"
+                    DetalleFase = "ALU " & operacion & " = " & AHex(resultado) & Banderas()
+                Case "MOV"
+                    DetalleFase = "dato = " & AHex(resultado)
+                Case "LOAD"
+                    DetalleFase = "MAR=" & mar & ", MDR=" & mdr & " (leido de memoria)"
+                Case "STORE"
+                    DetalleFase = "dato a guardar = " & AHex(resultado)
+                Case "JMP"
+                    DetalleFase = "PC=" & AHex(operando) & " (salta)"
+                Case "JZ"
+                    If LeerBandera("ZF") = 1 Then
+                        DetalleFase = "ZF=1 -> PC=" & AHex(operando) & " (salta)"
+                    Else
+                        DetalleFase = "ZF=0 -> no salta"
+                    End If
+                Case "JNZ"
+                    If LeerBandera("ZF") = 0 Then
+                        DetalleFase = "ZF=0 -> PC=" & AHex(operando) & " (salta)"
+                    Else
+                        DetalleFase = "ZF=1 -> no salta"
+                    End If
+                Case "HLT"
+                    DetalleFase = "HLT -> se detiene el reloj"
+            End Select
+
+        Case "STORE"
+            If Not guardar Then
+                DetalleFase = "(no guarda nada)"
+            ElseIf operacion = "STORE" Then
+                DetalleFase = "MAR=" & mar & ", MDR=" & mdr & " -> RAM[" & mar & "]=" & mdr
+            Else
+                DetalleFase = registro & " <- " & AHex(resultado)
             End If
     End Select
 End Function
