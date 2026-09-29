@@ -1,0 +1,7 @@
+# Archivos temporales / de bloqueo de Excel
+~$*
+*.tmp
+
+# Archivos del sistema
+Thumbs.db
+desktop.ini

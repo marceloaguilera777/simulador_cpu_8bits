@@ -1,0 +1,7 @@
+# El editor de VBA necesita finales de linea CRLF al importar modulos
+*.bas text eol=crlf
+*.cls text eol=crlf
+*.vba text eol=crlf
+
+# El libro de Excel es binario
+*.xlsm binary
