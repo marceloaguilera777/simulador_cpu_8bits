@@ -29,6 +29,7 @@ End Function
 ' Guarda un valor en un registro (se queda solo con 8 bits)
 Sub PonerRegistro(ByVal nombre As String, ByVal valor As Integer)
     CeldaRegistro(nombre).Value = AHex(valor And 255)
+    Resaltar CeldaRegistro(nombre)
 End Sub
 
 ' Banderas: solo 0 o 1
@@ -38,6 +39,7 @@ End Function
 
 Sub PonerBandera(ByVal nombre As String, ByVal valor As Integer)
     CeldaRegistro(nombre).Value = CStr(valor)
+    Resaltar CeldaRegistro(nombre)
 End Sub
 
 ' RESET: todo en cero

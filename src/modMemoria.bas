@@ -17,6 +17,7 @@ End Function
 Function LeerMemoria(ByVal direccion As Integer) As Integer
     PonerRegistro "MAR", direccion
     PonerRegistro "MDR", CInt("&H" & CeldaMemoria(direccion).Value)
+    Resaltar CeldaMemoria(direccion)
     LeerMemoria = LeerRegistro("MDR")
 End Function
 
@@ -25,6 +26,7 @@ Sub EscribirMemoria(ByVal direccion As Integer, ByVal valor As Integer)
     PonerRegistro "MAR", direccion
     PonerRegistro "MDR", valor
     CeldaMemoria(direccion).Value = AHex(valor And 255)
+    Resaltar CeldaMemoria(direccion)
 End Sub
 
 ' Prueba rapida: escribe 07h en la direccion 80h y la vuelve a leer
