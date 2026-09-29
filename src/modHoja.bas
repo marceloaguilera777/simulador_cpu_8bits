@@ -80,6 +80,14 @@ Sub PrepararHoja()
     ws.Range("U21").Formula = "=HEX2DEC(U19)"
     ws.Range("T18:U21").Borders.LineStyle = xlContinuous
 
+    ' ---------- CICLO DE INSTRUCCION (T23:U25) ----------
+    ws.Range("T23").Value = "CICLO DE INSTRUCCION"
+    ws.Range("T23").Font.Bold = True
+    ws.Range("T24").Value = "Fase"
+    ws.Range("T25").Value = "Instruccion"
+    ws.Range("T24:U25").Borders.LineStyle = xlContinuous
+    ws.Range("U24:U25").Font.Bold = True
+
     ' ---------- Tamanos de columnas ----------
     ws.Range("C:R").ColumnWidth = 4
     ws.Range("T:T").ColumnWidth = 10
