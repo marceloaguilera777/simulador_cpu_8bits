@@ -40,3 +40,27 @@ Sub CargarProgramaPrueba()
     CargarBytes &H0, "10 03 11 00 51 52 F2 04 23 80 F0 0E 11 FF F1 12 11 EE 00"
     Reiniciar
 End Sub
+
+' ------------------------------------------------------------
+' PROGRAMA DEMO: multiplicacion por sumas sucesivas
+' RAM[82] = RAM[80] x RAM[81]      (7 x 5 = 35 = 23h)
+'   00: MOV AX, 00        resultado = 0
+'   02: LOAD BX, [80]     BX = multiplicando
+'   04: STORE [82], AX    RAM[82] = 0
+'   06: LOAD AX, [81]     <- bucle: AX = contador
+'   08: CMP AX, 00        el contador llego a 0?
+'   0A: JZ 16             si -> fin
+'   0C: DEC AX            contador - 1
+'   0D: STORE [81], AX
+'   0F: LOAD AX, [82]     AX = resultado parcial
+'   11: ADD AX, BX        resultado + multiplicando
+'   12: STORE [82], AX
+'   14: JMP 06            volver al bucle
+'   16: HLT
+' ------------------------------------------------------------
+Sub CargarProgramaDemo()
+    BorrarMemoria
+    CargarBytes &H0, "10 00 21 80 22 82 20 81 60 00 F1 16 52 22 81 20 82 32 22 82 F0 06 00"
+    CargarBytes &H80, "07 05 00"    ' datos: 7, 5 y el resultado
+    Reiniciar
+End Sub
